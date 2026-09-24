@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+           http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+    ks-integration-tests
+    ====================
+    Automated JUnit 5 integration tests for all three KIE Server scenarios:
+
+      KsV81Test   — example-kjar built with JVM 17 / BAMOE 8.1 (KIE 7.81.1-SNAPSHOT)
+      KsV80Test   — example-kjar built with JVM 11 / BAMOE 8.0 (KIE 7.67.2.Final-redhat-00034)
+      KsBc80Test  — example-kjar authored in BC 8.0, deployed to KIE Server 8.1
+
+    Each test class:
+      @BeforeAll  — installs the KJAR into the KIE Server repo, deploys the container
+      @Test       — calls DMN, DRL, BPMN, PMML and asserts results
+      @AfterAll   — undeploys the container
+
+    Run (KIE Server must be running):
+      mvn verify -Pit \
+        -DKS_URL=http://localhost:8080/kie-server/services/rest/server \
+        -DKS_USER=adminUser \
+        -DKS_PASS=admin@Redhat1 \
+        -DEAP81=$HOME/BAMOE-8/BAMOE-8.1/jboss-eap-8.1
+
+    Skip the integration tests (unit tests only):
+      mvn test
+  -->
+
+  <groupId>com.example</groupId>
+  <artifactId>ks-integration-tests</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+  <name>KIE Server Integration Tests</name>
+
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <kie.version>7.81.1-SNAPSHOT</kie.version>
+    <kie.version.v80>7.67.2.Final-redhat-00034</kie.version.v80>
+    <!-- KIE Server connection — override with -D flags or env vars -->
+    <KS_URL>http://localhost:8080/kie-server/services/rest/server</KS_URL>
+    <KS_USER>adminUser</KS_USER>
+    <KS_PASS>admin@Redhat1</KS_PASS>
+    <EAP81>${user.home}/BAMOE-8/BAMOE-8.1/jboss-eap-8.1</EAP81>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>kie-local</id>
+      <url>file://${env.HOME}/BAMOE-8/BAMOE-8.1/jboss-eap-8.1/repositories/kie/global</url>
+    </repository>
+    <repository>
+      <id>bamoe8-ga</id>
+      <url>https://maven.repository.redhat.com/ga/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <!-- Jackson pinned to match KIE Server 7.81.1-SNAPSHOT -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.17.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.17.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.17.2</version>
+    </dependency>
+
+    <!-- KIE Server Java SDK (8.1) -->
+    <dependency>
+      <groupId>org.kie.server</groupId>
+      <artifactId>kie-server-client</artifactId>
+      <version>${kie.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-api</artifactId>
+      <version>${kie.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-core</artifactId>
+      <version>${kie.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-dmn-core</artifactId>
+      <version>${kie.version}</version>
+    </dependency>
+
+    <!-- KJAR fact class (Applicant) for DRL batch commands — v8.1 KJAR -->
+    <dependency>
+      <groupId>com.example</groupId>
+      <artifactId>example-kjar</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <!-- JUnit 5 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Skip integration tests by default; run only with -Pit -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <!-- Unit tests: exclude *IT.java -->
+          <excludes>
+            <exclude>**/*IT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <includes>
+            <include>**/*IT.java</include>
+          </includes>
+          <systemPropertyVariables>
+            <KS_URL>${KS_URL}</KS_URL>
+            <KS_USER>${KS_USER}</KS_USER>
+            <KS_PASS>${KS_PASS}</KS_PASS>
+            <EAP81>${EAP81}</EAP81>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>it</id>
+      <!-- Activating this profile enables failsafe / integration tests -->
+    </profile>
+  </profiles>
+
+</project>

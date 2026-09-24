@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+           http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+    BAMOE 8.0 KJAR — authored in Business Central 8.0
+    ===================================================
+    This is a kjar authored in / exported from Business Central 8.0.
+    Built with JDK 11 / KIE 7.67.2.Final-redhat-00034 (BAMOE 8.0).
+    Contains all four model types + scesim test files.
+    KIE Server 8.1 is fully backward-compatible with this KJAR.
+
+    Build:  mvn clean install   (requires JDK 11)
+    Output: target/example-kjar-1.0.0.jar
+  -->
+
+  <groupId>com.example</groupId>
+  <artifactId>example-kjar</artifactId>
+  <version>1.0.0</version>
+  <packaging>kjar</packaging>
+
+  <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <kie.version>7.67.2.Final-redhat-00034</kie.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>bamoe8</id>
+      <url>https://maven.repository.redhat.com/ga/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>bamoe8</id>
+      <url>https://maven.repository.redhat.com/ga/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-api</artifactId>
+      <version>${kie.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-internal</artifactId>
+      <version>${kie.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- scesim test runner -->
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-scenario-simulation-api</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-scenario-simulation-backend</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.9.3</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.kie</groupId>
+        <artifactId>kie-maven-plugin</artifactId>
+        <version>${kie.version}</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

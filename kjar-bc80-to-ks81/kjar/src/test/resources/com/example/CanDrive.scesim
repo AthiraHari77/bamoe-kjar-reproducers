@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CanDrive.scesim
+  Test Scenario for CanDrive.dmn — validates Can Drive? decision.
+  Authored in Business Central 8.0 format.
+-->
+<ScenarioSimulationModel version="1.8">
+  <simulation>
+    <scesimModelDescriptor>
+      <factMappings>
+        <FactMapping>
+          <expressionElements>
+            <ExpressionElement>
+              <step>Age</step>
+            </ExpressionElement>
+          </expressionElements>
+          <expressionIdentifier>
+            <name>Age</name>
+            <type>GIVEN</type>
+          </expressionIdentifier>
+          <factIdentifier>
+            <name>Age</name>
+            <className>number</className>
+          </factIdentifier>
+          <className>java.lang.Number</className>
+          <factAlias>Age</factAlias>
+          <columnWidth>114.0</columnWidth>
+          <factMappingValueType>NOT_EXPRESSION</factMappingValueType>
+        </FactMapping>
+        <FactMapping>
+          <expressionElements>
+            <ExpressionElement>
+              <step>Can Drive?</step>
+            </ExpressionElement>
+          </expressionElements>
+          <expressionIdentifier>
+            <name>Can Drive?</name>
+            <type>EXPECT</type>
+          </expressionIdentifier>
+          <factIdentifier>
+            <name>Can Drive?</name>
+            <className>boolean</className>
+          </factIdentifier>
+          <className>java.lang.Boolean</className>
+          <factAlias>Can Drive?</factAlias>
+          <columnWidth>114.0</columnWidth>
+          <factMappingValueType>NOT_EXPRESSION</factMappingValueType>
+        </FactMapping>
+      </factMappings>
+    </scesimModelDescriptor>
+    <scenarios>
+      <Scenario>
+        <factMappingValues>
+          <FactMappingValue>
+            <factIdentifier>
+              <name>Age</name>
+              <className>number</className>
+            </factIdentifier>
+            <expressionIdentifier>
+              <name>Age</name>
+              <type>GIVEN</type>
+            </expressionIdentifier>
+            <rawValue class="string">25</rawValue>
+          </FactMappingValue>
+          <FactMappingValue>
+            <factIdentifier>
+              <name>Can Drive?</name>
+              <className>boolean</className>
+            </factIdentifier>
+            <expressionIdentifier>
+              <name>Can Drive?</name>
+              <type>EXPECT</type>
+            </expressionIdentifier>
+            <rawValue class="string">true</rawValue>
+          </FactMappingValue>
+        </factMappingValues>
+        <description>Adult can drive</description>
+        <index>0</index>
+      </Scenario>
+      <Scenario>
+        <factMappingValues>
+          <FactMappingValue>
+            <factIdentifier>
+              <name>Age</name>
+              <className>number</className>
+            </factIdentifier>
+            <expressionIdentifier>
+              <name>Age</name>
+              <type>GIVEN</type>
+            </expressionIdentifier>
+            <rawValue class="string">15</rawValue>
+          </FactMappingValue>
+          <FactMappingValue>
+            <factIdentifier>
+              <name>Can Drive?</name>
+              <className>boolean</className>
+            </factIdentifier>
+            <expressionIdentifier>
+              <name>Can Drive?</name>
+              <type>EXPECT</type>
+            </expressionIdentifier>
+            <rawValue class="string">false</rawValue>
+          </FactMappingValue>
+        </factMappingValues>
+        <description>Minor cannot drive</description>
+        <index>1</index>
+      </Scenario>
+    </scenarios>
+  </simulation>
+  <background>
+    <scesimModelDescriptor>
+      <factMappings>
+        <FactMapping>
+          <expressionElements/>
+          <expressionIdentifier>
+            <name>1|1</name>
+            <type>GIVEN</type>
+          </expressionIdentifier>
+          <factIdentifier>
+            <name>Empty</name>
+            <className>java.lang.Void</className>
+          </factIdentifier>
+          <className>java.lang.Void</className>
+          <factAlias>Instance 1</factAlias>
+          <columnWidth>114.0</columnWidth>
+          <factMappingValueType>NOT_EXPRESSION</factMappingValueType>
+        </FactMapping>
+      </factMappings>
+    </scesimModelDescriptor>
+    <scenarios>
+      <Scenario>
+        <factMappingValues>
+          <FactMappingValue>
+            <factIdentifier>
+              <name>Empty</name>
+              <className>java.lang.Void</className>
+            </factIdentifier>
+            <expressionIdentifier>
+              <name>1|1</name>
+              <type>GIVEN</type>
+            </expressionIdentifier>
+          </FactMappingValue>
+        </factMappingValues>
+        <description></description>
+        <index>0</index>
+      </Scenario>
+    </scenarios>
+  </background>
+  <imports>
+    <imports/>
+  </imports>
+  <type>DMN</type>
+  <dmnFilePath>com/example/CanDrive.dmn</dmnFilePath>
+  <name>CanDrive</name>
+  <namespace>http://www.example.com/CanDrive</namespace>
+  <fileName>CanDrive.scesim</fileName>
+  <dmnNamespace>http://www.example.com/CanDrive</dmnNamespace>
+  <dmnName>CanDrive</dmnName>
+  <skipFromBuild>false</skipFromBuild>
+  <stateless>true</stateless>
+</ScenarioSimulationModel>

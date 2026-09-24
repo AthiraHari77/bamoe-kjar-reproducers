@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  kmodule.xml for BAMOE 8.0 kjar.
+  default="true" on kbase is required for DMN endpoint on KIE Server.
+-->
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+  <kbase name="defaultKieBase" packages="com.example" default="true">
+    <ksession name="defaultStatelessKieSession" type="stateless" default="true"/>
+    <ksession name="defaultKieSession"          type="stateful"/>
+  </kbase>
+</kmodule>

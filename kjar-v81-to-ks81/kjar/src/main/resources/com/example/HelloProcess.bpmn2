@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HelloProcess.bpmn2
+  Process ID : com.example.HelloProcess
+  Flow       : Start → Script Task (println) → End
+-->
+<bpmn2:definitions
+  xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:drools="http://www.jboss.org/drools"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  id="_HelloProcess_Def"
+  targetNamespace="http://www.example.com"
+  exporter="manual"
+  exporterVersion="1.0">
+
+  <bpmn2:process id="com.example.HelloProcess"
+                 name="HelloProcess"
+                 drools:packageName="com.example"
+                 isExecutable="true">
+
+    <bpmn2:startEvent id="_start" name="Start">
+      <bpmn2:outgoing>_f1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+
+    <bpmn2:scriptTask id="_script" name="Hello Script"
+                      scriptFormat="http://www.java.com/java">
+      <bpmn2:incoming>_f1</bpmn2:incoming>
+      <bpmn2:outgoing>_f2</bpmn2:outgoing>
+      <bpmn2:script><![CDATA[System.out.println("Hello BPMN");]]></bpmn2:script>
+    </bpmn2:scriptTask>
+
+    <bpmn2:endEvent id="_end" name="End">
+      <bpmn2:incoming>_f2</bpmn2:incoming>
+    </bpmn2:endEvent>
+
+    <bpmn2:sequenceFlow id="_f1" sourceRef="_start"  targetRef="_script"/>
+    <bpmn2:sequenceFlow id="_f2" sourceRef="_script" targetRef="_end"/>
+
+  </bpmn2:process>
+
+  <bpmndi:BPMNDiagram id="_diagram">
+    <bpmndi:BPMNPlane bpmnElement="com.example.HelloProcess">
+      <bpmndi:BPMNShape id="_start_s"  bpmnElement="_start">
+        <dc:Bounds x="80"  y="160" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_script_s" bpmnElement="_script">
+        <dc:Bounds x="180" y="138" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_end_s"    bpmnElement="_end">
+        <dc:Bounds x="360" y="160" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="_f1_e" bpmnElement="_f1">
+        <di:waypoint x="116" y="178"/>
+        <di:waypoint x="180" y="178"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_f2_e" bpmnElement="_f2">
+        <di:waypoint x="280" y="178"/>
+        <di:waypoint x="360" y="178"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn2:definitions>

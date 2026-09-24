@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HelloProcess.bpmn2  (BAMOE 8.0 version)
+  Process ID : com.example.HelloProcess
+  Flow       : Start → Script Task (println) → End
+-->
+<bpmn2:definitions
+  xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:drools="http://www.jboss.org/drools"
+  id="_HelloProcess_Def"
+  targetNamespace="http://www.example.com"
+  exporter="manual"
+  exporterVersion="1.0">
+
+  <bpmn2:process id="com.example.HelloProcess"
+                 name="HelloProcess"
+                 drools:packageName="com.example"
+                 isExecutable="true">
+
+    <bpmn2:startEvent id="_start" name="Start">
+      <bpmn2:outgoing>_f1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+
+    <bpmn2:scriptTask id="_script" name="Hello Script"
+                      scriptFormat="http://www.java.com/java">
+      <bpmn2:incoming>_f1</bpmn2:incoming>
+      <bpmn2:outgoing>_f2</bpmn2:outgoing>
+      <bpmn2:script><![CDATA[System.out.println("Hello BPMN from BAMOE 8.0");]]></bpmn2:script>
+    </bpmn2:scriptTask>
+
+    <bpmn2:endEvent id="_end" name="End">
+      <bpmn2:incoming>_f2</bpmn2:incoming>
+    </bpmn2:endEvent>
+
+    <bpmn2:sequenceFlow id="_f1" sourceRef="_start"  targetRef="_script"/>
+    <bpmn2:sequenceFlow id="_f2" sourceRef="_script" targetRef="_end"/>
+
+  </bpmn2:process>
+
+</bpmn2:definitions>

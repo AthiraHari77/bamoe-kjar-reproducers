@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CanDrive.dmn  (BAMOE 8.0 version)
+  Input  : Age  (number)
+  Decision: Can Drive?  (boolean)  →  Age >= 18
+  Namespace: http://www.example.com/CanDrive
+-->
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/"
+             id="_CanDrive_Definitions"
+             name="CanDrive"
+             namespace="http://www.example.com/CanDrive">
+
+  <inputData id="_age_input" name="Age">
+    <variable id="_age_var" name="Age" typeRef="number"/>
+  </inputData>
+
+  <decision id="_can_drive_decision" name="Can Drive?">
+    <variable id="_can_drive_var" name="Can Drive?" typeRef="boolean"/>
+    <informationRequirement id="_req1">
+      <requiredInput href="#_age_input"/>
+    </informationRequirement>
+    <literalExpression id="_can_drive_expr">
+      <text>Age >= 18</text>
+    </literalExpression>
+  </decision>
+
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="_age_input">
+        <dc:Bounds x="300" y="200" width="100" height="50"/>
+      </dmndi:DMNShape>
+      <dmndi:DMNShape dmnElementRef="_can_drive_decision">
+        <dc:Bounds x="300" y="80"  width="100" height="50"/>
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge dmnElementRef="_req1">
+        <di:waypoint x="350" y="200"/>
+        <di:waypoint x="350" y="130"/>
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+
+</definitions>

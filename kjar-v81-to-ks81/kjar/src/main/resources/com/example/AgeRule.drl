@@ -1,0 +1,22 @@
+/*
+  AgeRule.drl — DRL asset
+  Package must match the Java class package.
+  The global "results" list is filled by rules and returned via KIE Server.
+*/
+package com.example;
+
+global java.util.List results;
+
+rule "Adult"
+  when
+    Applicant( age >= 18, $a : age )
+  then
+    results.add("ADULT:" + $a);
+end
+
+rule "Minor"
+  when
+    Applicant( age < 18, $a : age )
+  then
+    results.add("MINOR:" + $a);
+end

@@ -1,8 +1,12 @@
-# Migration D — Manual KJAR v8.0 (JVM 11 / BAMOE 8.0) → KIE Server 8.1
+# kjar-v80-to-ks81 — KJAR built on BAMOE 8.0 (JVM 11) deployed to KIE Server 8.1
 
-Demonstrates building a KJAR **manually** under **JDK 11 / BAMOE 8.0**
-(KIE 7.67.2.Final-redhat-00034) and deploying it directly to **KIE Server 8.1**,
-then executing all four model types via curl and a Java client.
+Demonstrates that a KJAR built **manually** under **JDK 11 / BAMOE 8.0**
+(KIE `7.67.2.Final-redhat-00034`) can be deployed to and executed on
+**KIE Server 8.1** without any code changes.
+
+This is a backward-compatibility scenario: the KJAR was compiled against the
+BAMOE 8.0 API (KIE `7.67.x`) but KIE Server 8.1 (KIE `7.81.x`) is fully
+backward-compatible and can load and execute it as-is.
 
 No Business Central is involved.
 
@@ -11,7 +15,7 @@ No Business Central is involved.
 ## What is in this folder
 
 ```
-kjar/                          Maven project — manual BAMOE 8.0 KJAR (packaging=kjar)
+kjar/                          Maven project — BAMOE 8.0 KJAR (packaging=kjar)
   src/main/resources/
     com/example/
       CanDrive.dmn              DMN model  — "Can Drive?" decision
@@ -36,24 +40,26 @@ java-client/                   Maven project — thin Java KIE Server client
 
 ## Prerequisites
 
-| Requirement    | Version                        |
-|----------------|--------------------------------|
-| JDK            | 11                             |
-| Maven          | 3.6+                           |
-| KIE Server 8.1 | running on EAP 8.1             |
+| Requirement    | Version                                          |
+|----------------|--------------------------------------------------|
+| JDK            | 11 (matches the BAMOE 8.0 build target)          |
+| Maven          | 3.6+                                             |
+| KIE Server 8.1 | running on EAP 8.1                               |
+
+> **Compatibility note:** The KJAR is built with KIE `7.67.2.Final-redhat-00034`
+> (BAMOE 8.0) but deployed to KIE Server 8.1 (KIE `7.81.x`). KIE Server 8.1 is
+> backward-compatible with KJARs built on 8.0 — no recompilation or changes are
+> required.
 
 Set these variables once in your terminal — every command below uses them:
 
-
-```bash
     export KS_URL=http://localhost:8080/kie-server/services/rest/server
     export KS_USER=adminUser
     export KS_PASS=admin@Redhat1
-```
 
 ---
 
-## Step 1 — Build the KJAR locally
+## Step 1 — Build the KJAR locally (with JDK 11)
 
 ```bash
 cd kjar
@@ -65,7 +71,7 @@ Expected: `BUILD SUCCESS`
 Confirm the KJAR contents (still inside `kjar/`):
 
 ```bash
-jar tf target/manual-v80-kjar-1.0.0.jar | grep -E "kmodule|\.dmn|\.drl|\.bpmn|\.pmml|kbase"
+jar tf target/example-kjar-1.0.0.jar | grep -E "kmodule|\.dmn|\.drl|\.bpmn|\.pmml|kbase"
 ```
 
 Expected output:
@@ -85,28 +91,28 @@ com/example/AgeScorecard.pmml
 ## Step 2 — Deploy the container to KIE Server 8.1
 
 KIE Server resolves KJARs from its own embedded Maven repository. Copy the
-built JAR and POM into the KIE Server repository directory before deploying.
+built JAR and POM there before deploying:
 
 ```bash
-INSTALL_DIR=$HOME/BAMOE-8/BAMOE-8.1/jboss-eap-8.1/repositories/kie/global/com/example/manual-v80-kjar/1.0.0
+INSTALL_DIR=$HOME/BAMOE-8/BAMOE-8.1/jboss-eap-8.1/repositories/kie/global/com/example/example-kjar/1.0.0
 mkdir -p "$INSTALL_DIR"
-cp kjar/target/manual-v80-kjar-1.0.0.jar "$INSTALL_DIR/"
-cp kjar/pom.xml                           "$INSTALL_DIR/manual-v80-kjar-1.0.0.pom"
+cp kjar/target/example-kjar-1.0.0.jar "$INSTALL_DIR/"
+cp kjar/pom.xml                        "$INSTALL_DIR/example-kjar-1.0.0.pom"
 ```
 
-Then deploy the container:
+Deploy the container:
 
 ```bash
 curl -s -u "$KS_USER:$KS_PASS" \
   -X PUT \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  "$KS_URL/containers/manual-v80-kjar_1.0.0" \
+  "$KS_URL/containers/example-kjar_1.0.0" \
   -d '{
-    "container-id": "manual-v80-kjar_1.0.0",
+    "container-id": "example-kjar_1.0.0",
     "release-id": {
       "group-id":    "com.example",
-      "artifact-id": "manual-v80-kjar",
+      "artifact-id": "example-kjar",
       "version":     "1.0.0"
     }
   }'
@@ -117,7 +123,7 @@ Confirm the container is started:
 ```bash
 curl -s -u "$KS_USER:$KS_PASS" \
   -H "Accept: application/json" \
-  "$KS_URL/containers/manual-v80-kjar_1.0.0" \
+  "$KS_URL/containers/example-kjar_1.0.0" \
   | grep -o '"status" *: *"[^"]*"' | head -1
 ```
 
@@ -136,7 +142,7 @@ curl -s -u "$KS_USER:$KS_PASS" \
   -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  "$KS_URL/containers/manual-v80-kjar_1.0.0/dmn" \
+  "$KS_URL/containers/example-kjar_1.0.0/dmn" \
   -d '{"model-namespace":"http://www.example.com/CanDrive","model-name":"CanDrive","dmn-context":{"Age":25}}'
 ```
 
@@ -149,7 +155,7 @@ curl -s -u "$KS_USER:$KS_PASS" \
   -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  "$KS_URL/containers/manual-v80-kjar_1.0.0/dmn" \
+  "$KS_URL/containers/example-kjar_1.0.0/dmn" \
   -d '{"model-namespace":"http://www.example.com/CanDrive","model-name":"CanDrive","dmn-context":{"Age":15}}'
 ```
 
@@ -166,7 +172,7 @@ curl -s -u "$KS_USER:$KS_PASS" \
   -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  "$KS_URL/containers/instances/manual-v80-kjar_1.0.0" \
+  "$KS_URL/containers/instances/example-kjar_1.0.0" \
   -d '{"lookup":"defaultStatelessKieSession","commands":[{"set-global":{"identifier":"results","object":{"java.util.ArrayList":[]},"out-identifier":"results"}},{"insert":{"object":{"com.example.Applicant":{"age":25}}}},{"fire-all-rules":{"out-identifier":"fired"}}]}'
 ```
 
@@ -181,7 +187,7 @@ curl -s -u "$KS_USER:$KS_PASS" \
   -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  "$KS_URL/containers/manual-v80-kjar_1.0.0/processes/com.example.HelloProcess/instances" \
+  "$KS_URL/containers/example-kjar_1.0.0/processes/com.example.HelloProcess/instances" \
   -d '{}'
 ```
 
@@ -198,7 +204,7 @@ curl -s -u "$KS_USER:$KS_PASS" \
   -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  "$KS_URL/containers/instances/manual-v80-kjar_1.0.0" \
+  "$KS_URL/containers/instances/example-kjar_1.0.0" \
   -d '{"lookup":"defaultKieSession","commands":[{"apply-pmml-model-command":{"outIdentifier":"pmml-result","requestData":{"correlationId":"1","modelName":"AgeScorecard","source":"com/example/AgeScorecard.pmml","requestParams":[{"name":"age","type":"java.lang.Double","value":"25.0"}]}}}]}'
 ```
 
@@ -217,4 +223,4 @@ mvn exec:java -Dexec.mainClass=com.example.client.RunAll \
 
 For individual model execution see
 [`../kjar-v81-to-ks81/README.md`](../kjar-v81-to-ks81/README.md)
-— same client, substitute `manual-v80-kjar_1.0.0` for the container ID.
+— same client, substitute `example-kjar_1.0.0` for the container ID.

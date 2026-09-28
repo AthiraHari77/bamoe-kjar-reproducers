@@ -5,15 +5,16 @@ import org.kie.server.client.KieServicesClient;
 /**
  * RunAll — deploys the container then runs all four model clients in sequence.
  *
- * Run:
+ * Run (from java-client/ directory):
  *   mvn exec:java -Dexec.mainClass=com.example.client.RunAll \
- *     -DEAP81="$EAP81" -DPROJECT="$PROJECT"
+ *     -DEAP81="$EAP81" -DPROJECT="$PROJECT" \
+ *     -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
  */
 public class RunAll {
 
     public static void main(String[] args) throws Exception {
         System.out.println("══════════════════════════════════════════════");
-        System.out.println("  Scenario 2 — Java Client: Deploy + All Models");
+        System.out.println("  kjar-bc81-to-ks81 — Java Client: Deploy + All Models");
         System.out.println("══════════════════════════════════════════════");
 
         // Step 1: install KJAR into KIE Server repo and deploy the container

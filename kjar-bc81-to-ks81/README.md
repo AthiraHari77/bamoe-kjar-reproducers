@@ -1,17 +1,16 @@
-# Migration C — BC 8.0 KJAR → KIE Server 8.1
+# Scenario A — BC 8.1 KJAR → KIE Server 8.1
 
-Take a KJAR **authored in / exported from Business Central 8.0**
-(JDK 11 / KIE 7.67.x), download it, then deploy and execute on **KIE Server 8.1**.
-KIE Server 8.1 is fully backward-compatible — no changes to the KJAR are required.
+Author all four model types in **Business Central 8.1**, verify with Scenario Simulations,
+download the KJAR, then deploy and execute on **KIE Server 8.1**.
 
 ---
 
 ## What is in this folder
 
 ```
-kjar/                          BAMOE 8.0 KJAR (packaging=kjar)
+kjar/                          Represents the KJAR exported from Business Central 8.1
   src/main/resources/com/example/
-    CanDrive.dmn                DMN — "Can Drive?" decision
+    CanDrive.dmn                DMN — "Can Drive?" decision  (Age >= 18)
     AgeRule.drl                 DRL — Adult / Minor classification
     HelloProcess.bpmn2          BPMN2 — single script task
     AgeScorecard.pmml           PMML Scorecard — age → score
@@ -34,11 +33,12 @@ java-client/                   Java KIE Server client
 
 ## Prerequisites
 
-| Requirement    | Version                    |
-|----------------|----------------------------|
-| JDK            | 11 (to build the 8.0 KJAR) |
-| Maven          | 3.6+                       |
-| KIE Server 8.1 | running                    |
+| Requirement          | Version |
+|----------------------|---------|
+| JDK                  | 17      |
+| Maven                | 3.8+    |
+| Business Central 8.1 | running |
+| KIE Server 8.1       | running |
 
 ```bash
 export KS_URL=http://localhost:8080/kie-server/services/rest/server
@@ -50,34 +50,60 @@ export PROJECT=$(pwd)
 
 ---
 
-## Step 1 — Get the KJAR
+## Step 1 — Author assets in Business Central 8.1
 
-**Option A — Download from Business Central 8.0**
+In BC 8.1 (`http://localhost:8080/business-central`), **Design → Add Project**: name `example-kjar`, group `com.example`, artifact `example-kjar`, version `1.0.0`.
 
-1. In Business Central 8.0, go to **Build → Build & Download**
-2. Note the full path to the downloaded file, e.g.:
-   ```
-   /Users/you/Downloads/example-kjar-1.0.0.jar
-   ```
-3. Export it:
+Add these assets (all in package `com.example`):
+
+| Asset          | Type             | Details                                                                                 |
+|----------------|------------------|-----------------------------------------------------------------------------------------|
+| `CanDrive`     | DMN              | Input `Age` (number) → decision `Can Drive?` (boolean): `Age >= 18`                     |
+| `Applicant`    | Data Object      | Field `age` (Integer)                                                                   |
+| `AgeRule`      | DRL              | See `kjar/src/main/resources/com/example/AgeRule.drl`                                   |
+| `HelloProcess` | Business Process | Script task: `System.out.println("Hello BPMN");`, process ID `com.example.HelloProcess` |
+| `AgeScorecard` | PMML             | Upload `kjar/src/main/resources/com/example/AgeScorecard.pmml`                          |
+
+---
+
+## Step 2 — Run Scenario Simulations
+
+| Simulation  | Type  | Rows                               | Expected                   |
+|-------------|-------|------------------------------------|----------------------------|
+| `CanDrive`  | DMN   | Age=25, Age=15                     | `Can Drive?` = true, false |
+| `AgeRule`   | Rule  | Applicant.age=25, Applicant.age=15 | age round-trips unchanged  |
+
+**Add Asset → Test Scenario**, run each with **▶ Run** — all rows must pass (green).
+
+---
+
+## Step 3 — Download the KJAR
+
+1. Go to **Build → Build & Download**
+2. Note the full path and export it:
    ```bash
    export JAR_PATH="/Users/you/Downloads/example-kjar-1.0.0.jar"
    ```
 
-**Option B — Build locally** (requires JDK 11):
-
-```bash
-cd "$PROJECT/kjar"
-mvn clean deploy -DskipTests \
-  -DaltDeploymentRepository="kie-server::default::file:$EAP81/repositories/kie/global"
-# Skip to Step 2 Option A (curl) — the JAR is already in the KIE Server repo.
-```
-
 ---
 
-## Step 2 — Deploy the container
+## Step 4 — Install into KIE Server repo + deploy container
 
-### Option A — via curl
+### Option A — via Maven + curl
+
+Install with Maven (handles JAR layout and POM generation automatically):
+
+```bash
+mvn install:install-file \
+  -Dfile="$JAR_PATH" \
+  -DgroupId=com.example \
+  -DartifactId=example-kjar \
+  -Dversion=1.0.0 \
+  -Dpackaging=jar \
+  -DlocalRepositoryPath="$EAP81/repositories/kie/global"
+```
+
+Then deploy the container:
 
 ```bash
 curl -s -u "$KS_USER:$KS_PASS" \
@@ -101,14 +127,8 @@ Expected response contains `"type":"SUCCESS"`.
 
 ```bash
 cd "$PROJECT/java-client"
-# Downloaded JAR (set JAR_PATH first — runs mvn install:install-file):
 mvn compile exec:java -Dexec.mainClass=com.example.client.DeployContainer \
   -DEAP81="$EAP81" -DJAR_PATH="$JAR_PATH" \
-  -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
-
-# Locally-built KJAR (runs mvn deploy into KIE Server repo):
-mvn compile exec:java -Dexec.mainClass=com.example.client.DeployContainer \
-  -DEAP81="$EAP81" -DPROJECT="$PROJECT" \
   -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
 ```
 
@@ -119,7 +139,7 @@ Container deployed: example-kjar_1.0.0  status=STARTED
 
 ---
 
-## Step 3 — Execute via curl
+## Step 5 — Execute via curl
 
 ### DMN
 
@@ -171,7 +191,7 @@ Expected: `"score": 10.0`
 
 ---
 
-## Step 4 — Execute via Java client
+## Step 6 — Execute via Java client
 
 ```bash
 cd "$PROJECT/java-client"
@@ -185,7 +205,7 @@ mvn exec:java -Dexec.mainClass=com.example.client.DmnExecute \
 
 # DRL
 mvn exec:java -Dexec.mainClass=com.example.client.DrlExecute \
-  -DKS_URL="$KS_USER" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
+  -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
 
 # BPMN
 mvn exec:java -Dexec.mainClass=com.example.client.BpmnExecute \
@@ -197,8 +217,14 @@ mvn exec:java -Dexec.mainClass=com.example.client.PmmlExecute \
 
 # Deploy + all four in one command
 mvn exec:java -Dexec.mainClass=com.example.client.RunAll \
-  -DEAP81="$EAP81" -DJAR_PATH="$JAR_PATH" \
+  -DEAP81="$EAP81" -DPROJECT="$PROJECT" \
   -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
 ```
 
-For expected output and technical notes see [`../kjar-v81-to-ks81/README.md`](../kjar-v81-to-ks81/README.md).
+---
+
+## Notes
+
+- PMML execution uses `MarshallingFormat.XSTREAM` — `PmmlExecute` creates its own connection automatically
+- `RunAll` calls `DeployContainer` first, so it redeploys the container before running all four models
+- For KIE Server technical notes (KieBase default, XStream PMML, session types) see [`../kjar-v81-to-ks81/README.md`](../kjar-v81-to-ks81/README.md)

@@ -24,6 +24,8 @@ public class DmnExecute {
         KieServicesClient client = KsClient.build();
         DMNServicesClient dmn = client.getServicesClient(DMNServicesClient.class);
 
+        System.out.println("\n=== DMN: CanDrive ===");
+
         // Test 1: Age=25 — should be able to drive
         run(dmn, 25, true);
 

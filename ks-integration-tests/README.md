@@ -4,11 +4,11 @@ Automated JUnit 5 integration tests that exercise all three KIE Server deploymen
 
 ## What is tested
 
-| Test class | Scenario | KJAR built with |
-|---|---|---|
-| `KsV81IT` | `kjar-v81-to-ks81` | JVM 17 / BAMOE 8.1 (KIE 7.81.1-SNAPSHOT) |
-| `KsV80IT` | `kjar-v80-to-ks81` | JVM 11 / BAMOE 8.0 (KIE 7.67.2.Final-redhat-00034) |
-| `KsBc80IT` | `kjar-bc80-to-ks81` | JVM 11 / BC 8.0 authored KJAR |
+| Test class | Scenario            | KJAR built with                                    |
+|------------|---------------------|----------------------------------------------------|
+| `KsV81IT`  | `kjar-v81-to-ks81`  | JVM 17 / BAMOE 8.1 (KIE 7.81.1-SNAPSHOT)           |
+| `KsV80IT`  | `kjar-v80-to-ks81`  | JVM 11 / BAMOE 8.0 (KIE 7.67.2.Final-redhat-00034) |
+| `KsBc80IT` | `kjar-bc80-to-ks81` | JVM 11 / BC 8.0 authored KJAR                      |
 
 Each test class runs 7 assertions — DMN (2), DRL (2), BPMN (1), PMML (2) — in order using `@BeforeAll` / `@AfterAll` to deploy and undeploy the container.
 

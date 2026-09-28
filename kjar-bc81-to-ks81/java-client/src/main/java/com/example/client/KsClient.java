@@ -6,30 +6,31 @@ import org.kie.server.client.KieServicesConfiguration;
 import org.kie.server.client.KieServicesFactory;
 
 /**
- * Shared KIE Server connection setup.
- * Reads configuration from environment variables so you can point at
- * any server without recompiling.
+ * KsClient — shared KIE Server connection factory and KJAR coordinates.
  *
- * Defaults (for local single-machine setup):
- *   KS_URL  = http://localhost:8080/kie-server/services/rest/server
- *   KS_USER = adminUser
- *   KS_PASS = admin@Redhat1
+ * Reads KS_URL / KS_USER / KS_PASS from system properties (-D flags) first,
+ * then environment variables, then falls back to localhost defaults.
  */
 public class KsClient {
 
+    // ── KJAR Maven coordinates ──────────────────────────────────────────────
     public static final String GROUP_ID      = "com.example";
     public static final String ARTIFACT_ID   = "example-kjar";
     public static final String VERSION       = "1.0.0";
+
+    // ── KIE Server container ────────────────────────────────────────────────
     public static final String CONTAINER_ID  = "example-kjar_1.0.0";
+
+    // ── Model references ────────────────────────────────────────────────────
     public static final String DMN_NAMESPACE = "http://www.example.com/CanDrive";
     public static final String DMN_MODEL     = "CanDrive";
     public static final String DRL_SESSION   = "defaultStatelessKieSession";
-    public static final String PMML_SESSION  = "defaultKieSession";  // PMML needs stateful
+    public static final String PMML_SESSION  = "defaultKieSession";   // PMML needs stateful
     public static final String BPMN_PROCESS  = "com.example.HelloProcess";
     public static final String PMML_DOCUMENT = "com/example/AgeScorecard.pmml";
     public static final String PMML_MODEL    = "AgeScorecard";
 
-    /** Create and return a connected KieServicesClient. */
+    /** Create and return a connected KieServicesClient (JSON marshalling). */
     public static KieServicesClient build() {
         String url  = env("KS_URL",  "http://localhost:8080/kie-server/services/rest/server");
         String user = env("KS_USER", "adminUser");
@@ -44,8 +45,7 @@ public class KsClient {
         return KieServicesFactory.newKieServicesClient(cfg);
     }
 
-    private static String env(String key, String defaultValue) {
-        // Check system property first (-Dkey=value), then environment variable
+    static String env(String key, String defaultValue) {
         String v = System.getProperty(key);
         if (v != null && !v.isBlank()) return v;
         v = System.getenv(key);

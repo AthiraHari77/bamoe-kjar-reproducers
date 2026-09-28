@@ -17,6 +17,9 @@ import org.kie.server.client.KieServicesFactory;
  */
 public class KsClient {
 
+    public static final String GROUP_ID      = "com.example";
+    public static final String ARTIFACT_ID   = "example-kjar";
+    public static final String VERSION       = "1.0.0";
     public static final String CONTAINER_ID  = "example-kjar_1.0.0";
     public static final String DMN_NAMESPACE = "http://www.example.com/CanDrive";
     public static final String DMN_MODEL     = "CanDrive";

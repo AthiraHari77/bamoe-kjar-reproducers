@@ -1,106 +1,68 @@
-# kjar-v80-to-ks81 — KJAR built on BAMOE 8.0 (JVM 11) deployed to KIE Server 8.1
+# Migration D — Manual KJAR (JDK 11 / BAMOE 8.0) → KIE Server 8.1
 
-Demonstrates that a KJAR built **manually** under **JDK 11 / BAMOE 8.0**
-(KIE `7.67.2.Final-redhat-00034`) can be deployed to and executed on
-**KIE Server 8.1** without any code changes.
-
-This is a backward-compatibility scenario: the KJAR was compiled against the
-BAMOE 8.0 API (KIE `7.67.x`) but KIE Server 8.1 (KIE `7.81.x`) is fully
-backward-compatible and can load and execute it as-is.
-
-No Business Central is involved.
+Build a KJAR manually under **JDK 11 / BAMOE 8.0** (KIE 7.67.x), then deploy
+and execute on **KIE Server 8.1**. KIE Server 8.1 is fully backward-compatible —
+no changes to the KJAR are required.
 
 ---
 
 ## What is in this folder
 
 ```
-kjar/                          Maven project — BAMOE 8.0 KJAR (packaging=kjar)
-  src/main/resources/
-    com/example/
-      CanDrive.dmn              DMN model  — "Can Drive?" decision
-      AgeRule.drl               DRL rules  — Adult / Minor classification
-      HelloProcess.bpmn2        BPMN2 process — single script task
-      AgeScorecard.pmml         PMML Scorecard — age → score
-    META-INF/kmodule.xml        KIE module descriptor
-  src/main/java/com/example/
-    Applicant.java              Fact class used by DRL rules
+kjar/                          BAMOE 8.0 KJAR (packaging=kjar)
+  src/main/resources/com/example/
+    CanDrive.dmn                DMN — "Can Drive?" decision
+    AgeRule.drl                 DRL — Adult / Minor classification
+    HelloProcess.bpmn2          BPMN2 — single script task
+    AgeScorecard.pmml           PMML Scorecard — age → score
+  META-INF/kmodule.xml          KIE module descriptor
 
-java-client/                   Maven project — thin Java KIE Server client
+java-client/                   Java KIE Server client
   src/main/java/com/example/client/
-    KsClient.java               Shared connection factory
-    DmnExecute.java             DMN execution demo
-    DrlExecute.java             DRL execution demo
-    BpmnExecute.java            BPMN execution demo
-    PmmlExecute.java            PMML execution demo
-    RunAll.java                 Runs all four in sequence
+    KsClient.java               Connection factory + Maven coordinates
+    DeployContainer.java        Installs KJAR into KIE Server repo and deploys container
+    DmnExecute.java             DMN execution
+    DrlExecute.java             DRL execution
+    BpmnExecute.java            BPMN execution
+    PmmlExecute.java            PMML execution
+    RunAll.java                 Deploy + all four models in one command
 ```
 
 ---
 
 ## Prerequisites
 
-| Requirement    | Version                                          |
-|----------------|--------------------------------------------------|
-| JDK            | 11 (matches the BAMOE 8.0 build target)          |
-| Maven          | 3.6+                                             |
-| KIE Server 8.1 | running on EAP 8.1                               |
-
-> **Compatibility note:** The KJAR is built with KIE `7.67.2.Final-redhat-00034`
-> (BAMOE 8.0) but deployed to KIE Server 8.1 (KIE `7.81.x`). KIE Server 8.1 is
-> backward-compatible with KJARs built on 8.0 — no recompilation or changes are
-> required.
-
-Set these variables once in your terminal — every command below uses them:
-
-    export KS_URL=http://localhost:8080/kie-server/services/rest/server
-    export KS_USER=adminUser
-    export KS_PASS=admin@Redhat1
-
----
-
-## Step 1 — Build the KJAR locally (with JDK 11)
+| Requirement    | Version                    |
+|----------------|----------------------------|
+| JDK            | 11                         |
+| Maven          | 3.6+                       |
+| KIE Server 8.1 | running                    |
 
 ```bash
-cd kjar
-mvn clean install
-```
-
-Expected: `BUILD SUCCESS`
-
-Confirm the KJAR contents (still inside `kjar/`):
-
-```bash
-jar tf target/example-kjar-1.0.0.jar | grep -E "kmodule|\.dmn|\.drl|\.bpmn|\.pmml|kbase"
-```
-
-Expected output:
-
-```
-META-INF/kmodule.xml
-META-INF/kmodule.info
-META-INF/defaultKieBase/kbase.cache
-com/example/CanDrive.dmn
-com/example/AgeRule.drl
-com/example/HelloProcess.bpmn2
-com/example/AgeScorecard.pmml
+export KS_URL=http://localhost:8080/kie-server/services/rest/server
+export KS_USER=adminUser
+export KS_PASS=admin@Redhat1
+export EAP81=$HOME/BAMOE-8/BAMOE-8.1/jboss-eap-8.1
+export PROJECT=$(pwd)
 ```
 
 ---
 
-## Step 2 — Deploy the container to KIE Server 8.1
-
-KIE Server resolves KJARs from its own embedded Maven repository. Copy the
-built JAR and POM there before deploying:
+## Step 1 — Build and install the KJAR (with JDK 11)
 
 ```bash
-INSTALL_DIR=$HOME/BAMOE-8/BAMOE-8.1/jboss-eap-8.1/repositories/kie/global/com/example/example-kjar/1.0.0
-mkdir -p "$INSTALL_DIR"
-cp kjar/target/example-kjar-1.0.0.jar "$INSTALL_DIR/"
-cp kjar/pom.xml                        "$INSTALL_DIR/example-kjar-1.0.0.pom"
+cd "$PROJECT/kjar"
+mvn clean deploy -DskipTests \
+  -DaltDeploymentRepository="kie-server::default::file:$EAP81/repositories/kie/global"
 ```
 
-Deploy the container:
+Expected: `BUILD SUCCESS` — Maven lays out the JAR and POM in the KIE Server repo directly.
+
+---
+
+## Step 2 — Deploy the container
+
+### Option A — via curl
 
 ```bash
 curl -s -u "$KS_USER:$KS_PASS" \
@@ -118,96 +80,72 @@ curl -s -u "$KS_USER:$KS_PASS" \
   }'
 ```
 
-Confirm the container is started:
+Expected response contains `"type":"SUCCESS"`.
+
+### Option B — via Java client
 
 ```bash
-curl -s -u "$KS_USER:$KS_PASS" \
-  -H "Accept: application/json" \
-  "$KS_URL/containers/example-kjar_1.0.0" \
-  | grep -o '"status" *: *"[^"]*"' | head -1
+cd "$PROJECT/java-client"
+mvn compile exec:java -Dexec.mainClass=com.example.client.DeployContainer \
+  -DEAP81="$EAP81" -DPROJECT="$PROJECT" \
+  -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
 ```
 
-Expected: `"status" : "STARTED"`
+Expected:
+```
+Container deployed: example-kjar_1.0.0  status=STARTED
+```
 
 ---
 
 ## Step 3 — Execute via curl
 
-### DMN — CanDrive.dmn
-
-**Age=25 — expect `Can Drive? = true`**
+### DMN
 
 ```bash
-curl -s -u "$KS_USER:$KS_PASS" \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
+curl -s -u "$KS_USER:$KS_PASS" -X POST \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
   "$KS_URL/containers/example-kjar_1.0.0/dmn" \
   -d '{"model-namespace":"http://www.example.com/CanDrive","model-name":"CanDrive","dmn-context":{"Age":25}}'
 ```
-
 Expected: `"Can Drive?": true`
 
-**Age=15 — expect `Can Drive? = false`**
-
 ```bash
-curl -s -u "$KS_USER:$KS_PASS" \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
+curl -s -u "$KS_USER:$KS_PASS" -X POST \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
   "$KS_URL/containers/example-kjar_1.0.0/dmn" \
   -d '{"model-namespace":"http://www.example.com/CanDrive","model-name":"CanDrive","dmn-context":{"Age":15}}'
 ```
-
 Expected: `"Can Drive?": false`
 
----
-
-### DRL — AgeRule.drl
-
-**age=25 — expect `ADULT:25` in results**
+### DRL
 
 ```bash
-curl -s -u "$KS_USER:$KS_PASS" \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
+curl -s -u "$KS_USER:$KS_PASS" -X POST \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
   "$KS_URL/containers/instances/example-kjar_1.0.0" \
   -d '{"lookup":"defaultStatelessKieSession","commands":[{"set-global":{"identifier":"results","object":{"java.util.ArrayList":[]},"out-identifier":"results"}},{"insert":{"object":{"com.example.Applicant":{"age":25}}}},{"fire-all-rules":{"out-identifier":"fired"}}]}'
 ```
-
 Expected: `"value": ["ADULT:25"]`
 
----
-
-### BPMN — HelloProcess.bpmn2
+### BPMN
 
 ```bash
-curl -s -u "$KS_USER:$KS_PASS" \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
+curl -s -u "$KS_USER:$KS_PASS" -X POST \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
   "$KS_URL/containers/example-kjar_1.0.0/processes/com.example.HelloProcess/instances" \
   -d '{}'
 ```
+Expected: a numeric process instance ID (e.g. `1`)
 
-Expected: a plain integer process instance ID (e.g. `1`)
-
----
-
-### PMML — AgeScorecard.pmml
-
-**age=25.0 — expect `score=10.0`**
+### PMML
 
 ```bash
-curl -s -u "$KS_USER:$KS_PASS" \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
+curl -s -u "$KS_USER:$KS_PASS" -X POST \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
   "$KS_URL/containers/instances/example-kjar_1.0.0" \
   -d '{"lookup":"defaultKieSession","commands":[{"apply-pmml-model-command":{"outIdentifier":"pmml-result","requestData":{"correlationId":"1","modelName":"AgeScorecard","source":"com/example/AgeScorecard.pmml","requestParams":[{"name":"age","type":"java.lang.Double","value":"25.0"}]}}}]}'
 ```
-
 Expected: `"score": 10.0`
 
 ---
@@ -215,12 +153,31 @@ Expected: `"score": 10.0`
 ## Step 4 — Execute via Java client
 
 ```bash
-cd java-client
+cd "$PROJECT/java-client"
 mvn clean package -q
+```
+
+```bash
+# DMN
+mvn exec:java -Dexec.mainClass=com.example.client.DmnExecute \
+  -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
+
+# DRL
+mvn exec:java -Dexec.mainClass=com.example.client.DrlExecute \
+  -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
+
+# BPMN
+mvn exec:java -Dexec.mainClass=com.example.client.BpmnExecute \
+  -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
+
+# PMML
+mvn exec:java -Dexec.mainClass=com.example.client.PmmlExecute \
+  -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
+
+# Deploy + all four in one command
 mvn exec:java -Dexec.mainClass=com.example.client.RunAll \
+  -DEAP81="$EAP81" -DPROJECT="$PROJECT" \
   -DKS_URL="$KS_URL" -DKS_USER="$KS_USER" -DKS_PASS="$KS_PASS"
 ```
 
-For individual model execution see
-[`../kjar-v81-to-ks81/README.md`](../kjar-v81-to-ks81/README.md)
-— same client, substitute `example-kjar_1.0.0` for the container ID.
+For expected output and technical notes see [`../kjar-v81-to-ks81/README.md`](../kjar-v81-to-ks81/README.md).

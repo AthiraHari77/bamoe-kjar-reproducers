@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+           http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+    BAMOE 8.1 KJAR — authored in / exported from Business Central 8.1
+    ==================================================================
+    Simulates a KJAR created or edited inside Business Central 8.1.
+    Built with JDK 17 / KIE 7.81.1-SNAPSHOT (BAMOE 8.1).
+    Contains all four model types + scesim test files.
+
+    Build:  mvn clean install   (requires JDK 17)
+    Output: target/example-kjar-1.0.0.jar
+  -->
+
+  <groupId>com.example</groupId>
+  <artifactId>example-kjar</artifactId>
+  <version>1.0.0</version>
+  <packaging>kjar</packaging>
+
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <kie.version>7.81.1-SNAPSHOT</kie.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>kie-local</id>
+      <url>file://${env.HOME}/BAMOE-8/BAMOE-8.1/jboss-eap-8.1/repositories/kie/global</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>kie-local-plugins</id>
+      <url>file://${env.HOME}/BAMOE-8/BAMOE-8.1/jboss-eap-8.1/repositories/kie/global</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-api</artifactId>
+      <version>${kie.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-internal</artifactId>
+      <version>${kie.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- scesim test runner -->
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-scenario-simulation-api</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-scenario-simulation-backend</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- drools compiler needed by scesim test runner to build the KieBase -->
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-compiler</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- PMML runtime — required to build a KieBase that contains a .pmml file -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-pmml-dependencies</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Pin Jackson to avoid JsonSerializeAs ClassNotFoundException -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.17.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.17.2</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- jBPM flow + builder — required to build a KieBase that contains a .bpmn2 file -->
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-flow</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-flow-builder</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-bpmn2</artifactId>
+      <version>${kie.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- ASM — required by jbpm-bpmn2 process compilation -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>9.7</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- JAXB runtime required by PMML trusty evaluator (not on JDK 17 module path) -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>4.0.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.9.3</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.kie</groupId>
+        <artifactId>kie-maven-plugin</artifactId>
+        <version>${kie.version}</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

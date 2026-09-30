@@ -39,9 +39,9 @@ java-client/                 Java KIE Server client
 
 ```bash
 export KS_URL=http://localhost:8080/kie-server/services/rest/server
-export KS_USER=adminUser
-export KS_PASS=admin@Redhat1
-export EAP81=$HOME/BAMOE-8/BAMOE-8.1/jboss-eap-8.1
+export KS_USER=<kie-server-user>
+export KS_PASS=<kie-server-password>
+export EAP81=<path-to-jboss-eap-8.1>
 export PROJECT=$(pwd)
 ```
 
